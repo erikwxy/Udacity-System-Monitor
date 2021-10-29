@@ -29,13 +29,20 @@ float Processor::Utilization() {
       }
     }
   }
+  filestream.close();
   
   long Idle = values[3] + values[4];
+
   long NonIdle = values[0] + values[1] + values[2] + values[5] + values[6] + values[7];
 
   long Total = Idle + NonIdle;
 
-  float CPU_Percentage = ((float)Total - (float)NonIdle)/(float)Total;
+  long Total_diff = Total - _prevTotal;
+  long Idle_diff = Idle - _prevIdle;
+  _prevTotal = Total;
+  _prevIdle = Idle;
+
+  float CPU_Percentage = ((float)Total_diff - (float)Idle_diff)/(float)Total_diff;
 
   return CPU_Percentage;
 }

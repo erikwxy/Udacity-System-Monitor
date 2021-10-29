@@ -45,21 +45,30 @@ float Process::CpuUtilization() {
       }
     }
   }
+  filestream.close();
   long int total_time = utime + stime + cutime + cstime;
-  long int seconds =  LinuxParser::UpTime() - UpTime();
-  float cpu_usage = 100 * ((float)total_time / sysconf(_SC_CLK_TCK) / (float)seconds);
+  long int seconds =  UpTime();
+  float cpu_usage = (float)total_time / sysconf(_SC_CLK_TCK) / (float)seconds;
   return cpu_usage; 
 }
 
 // Return the command that generated this process
 string Process::Command() { 
-  string line{0};
+  string line;
+  string letter;
   string pid_string = to_string(Pid());
   std::ifstream filestream(LinuxParser::kProcDirectory + pid_string + LinuxParser::kCmdlineFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
-    return line;
+    std::istringstream linestream(line);
+    while (linestream >> letter){
+      line.append(letter);
+      if (line.length()>40){
+        return line;
+      }
+    }  
   }
+  filestream.close();
   return line;
 }
 
@@ -75,13 +84,16 @@ string Process::Ram() {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
       linestream >> key >> value;
-      if (key == "VmSize:" && std::all_of(value.begin(), value.end(), isdigit)) {
+      // the original key is vmsize, which is the sum of all the virtual memory
+      // see more details at https://man7.org/linux/man-pages/man5/proc.5.html
+      if (key == "VmRSS:" && std::all_of(value.begin(), value.end(), isdigit)) {
         mem = stoi(value);
-        return to_string(mem/1000);
+        return to_string(mem/1024);
       }
     }
   }
-  return to_string(mem/1000);
+  filestream.close();
+  return string();
 }
 
 // Return the user (name) that generated this process
@@ -100,6 +112,7 @@ string Process::User() {
       }
     }
   }
+  filestream.close();
   string user{"Unknown"};
   string str, uid2;
   std::ifstream filestream2(LinuxParser::kPasswordPath);
@@ -114,6 +127,7 @@ string Process::User() {
   
     }
   }
+  filestream2.close();
   return user; 
 }
 
@@ -135,5 +149,6 @@ long int Process::UpTime() {
       }
     }
   }
-  return uptime; 
+  filestream.close();
+  return LinuxParser::UpTime() - uptime; 
 }

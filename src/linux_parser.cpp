@@ -31,6 +31,7 @@ string LinuxParser::OperatingSystem() {
       }
     }
   }
+  filestream.close();
   return value;
 }
 
@@ -89,25 +90,25 @@ float LinuxParser::MemoryUtilization() {
        memfree = stoi(value);
     }    
   }
+  filestream.close();
   return (memtotal - memfree) / memtotal; 
 }
 
 //  : Read and return the system uptime
 long LinuxParser::UpTime() { 
-  std::string value1, value2;
-  float suspend_sec{0}, idle_proc_sec{0}; 
+  std::string value;
+  float suspend_sec{0}; 
   long uptime_sec{0};
   std::ifstream filestream(kProcDirectory + kUptimeFilename);
   string line;
   if (filestream.is_open()) {
       std::getline(filestream, line);
       std::istringstream linestream(line);
-      linestream >> value1 >> value2;    
-      suspend_sec = stoi(value1);
-      idle_proc_sec = stoi(value2);
-         
+      linestream >> value;    
+      suspend_sec = stoi(value);       
   }
-  uptime_sec = (long)(suspend_sec + idle_proc_sec);
+  filestream.close();
+  uptime_sec = (long)suspend_sec;
   return uptime_sec;
 }
 
@@ -133,6 +134,7 @@ int LinuxParser::TotalProcesses() {
       }
     }
   }
+  filestream.close();
   return n_proc;
 }
 
@@ -154,5 +156,6 @@ int LinuxParser::RunningProcesses() {
       }
     }
   }
+  filestream.close();
   return n_run_proc;
 }
