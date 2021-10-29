@@ -116,7 +116,7 @@ string Process::User() {
   string user{"Unknown"};
   string str, uid2;
   std::ifstream filestream2(LinuxParser::kPasswordPath);
-  if (filestream.is_open()) {
+  if (filestream2.is_open()) {
     while (std::getline(filestream2, line)) {
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
