@@ -70,6 +70,11 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
   mvwprintw(window, row, command_column, "COMMAND");
   wattroff(window, COLOR_PAIR(2));
   for (int i = 0; i < n; ++i) {
+    // Skip displaying process if its Ram or command is empty
+    if (processes[i].Ram() == "" || processes[i].Command() == ""){
+      continue;
+    }
+
     // Clear the line
     mvwprintw(window, ++row, pid_column, (string(window->_maxx-2, ' ').c_str()));
     
